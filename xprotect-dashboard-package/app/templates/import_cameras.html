@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Importera kameror{% endblock %}
+{% block page_title %}Importera kameror{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-surface-container-lowest rounded-2xl p-8">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-primary-container text-on-primary-container rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-3xl">upload_file</span>
+            </div>
+            <h3 class="font-headline font-bold text-xl text-on-background">Importera från Excel/CSV</h3>
+            <p class="text-on-surface-variant mt-2">Ladda upp en Excel-fil (.xlsx) eller CSV-fil med kamerainformation</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            <div class="border-2 border-dashed border-outline-variant rounded-2xl p-8 text-center hover:border-primary transition-colors">
+                <input type="file" name="file" id="fileInput" accept=".xlsx,.xls,.csv" class="hidden" required>
+                <label for="fileInput" class="cursor-pointer">
+                    <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4">cloud_upload</span>
+                    <p class="text-on-surface font-medium">Klicka för att välja fil</p>
+                    <p class="text-xs text-on-surface-variant mt-2">eller dra och släpp filen här</p>
+                </label>
+                <p id="fileName" class="mt-4 text-sm font-bold text-primary hidden"></p>
+            </div>
+
+            <div class="bg-surface-container-low p-6 rounded-xl">
+                <h4 class="font-bold text-sm text-on-background mb-4">Filformat</h4>
+                <p class="text-xs text-on-surface-variant mb-3">Excel-filen bör innehålla följande kolumner i worksheet "DeviceGroups":</p>
+                <ul class="text-xs text-on-surface-variant space-y-1">
+                    <li>• <strong>ParentGroup</strong> - Namn på överordnad grupp</li>
+                    <li>• <strong>CameraGroup</strong> - Namn på kamera-grupp</li>
+                    <li>• <strong>Device</strong> - Kamerans namn i VMS</li>
+                    <li>• <strong>Description</strong> - Beskrivning (valfritt)</li>
+                </ul>
+            </div>
+
+            <button type="submit" class="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all">
+                <span class="material-symbols-outlined">upload</span>
+                <span>Importera kameror</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileName').classList.remove('hidden');
+    }
+});
+</script>
+{% endblock %}

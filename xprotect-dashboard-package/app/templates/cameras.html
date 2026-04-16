@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Kameror - XProtect Dashboard{% endblock %}
+{% block page_title %}Kamera-hantering{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-end">
+        <div>
+            <p class="text-on-surface-variant">Hantera och övervaka alla kameror i systemet</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{{ url_for('camera_report', format='html') }}" class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest text-on-surface font-semibold rounded-full hover:bg-surface-variant transition-colors">
+                <span class="material-symbols-outlined text-lg">description</span>
+                <span>HTML Rapport</span>
+            </a>
+            <a href="{{ url_for('camera_report', format='pdf') }}" class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-semibold rounded-full hover:bg-primary-container transition-all">
+                <span class="material-symbols-outlined text-lg">picture_as_pdf</span>
+                <span>PDF Rapport</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-2xl overflow-hidden">
+        <div class="px-8 py-5 flex items-center justify-between bg-surface-container-low">
+            <h3 class="font-headline font-bold text-lg text-primary">Kamera Inventory</h3>
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                    <input type="text" id="searchInput" class="pl-10 pr-4 py-2 bg-white border-none rounded-xl text-sm w-64 focus:ring-2 focus:ring-primary" placeholder="Sök kameror...">
+                </div>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-surface-container-low text-on-surface-variant uppercase text-[10px] font-black tracking-widest">
+                        <th class="px-8 py-4">Status</th>
+                        <th class="px-4 py-4">Namn</th>
+                        <th class="px-4 py-4">IP-adress</th>
+                        <th class="px-4 py-4">Modell</th>
+                        <th class="px-4 py-4">Firmware</th>
+                        <th class="px-4 py-4">Inspelning</th>
+                        <th class="px-8 py-4 text-right">Detaljer</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for camera in cameras %}
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
+                        <td class="px-8 py-4">
+                            {% if camera.is_connected %}
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-green-500 ring-4 ring-green-100"></span>
+                                <span class="text-xs font-bold text-green-700">Online</span>
+                            </div>
+                            {% else %}
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-error ring-4 ring-error-container"></span>
+                                <span class="text-xs font-bold text-error">Offline</span>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-4">
+                            <p class="font-bold text-blue-900">{{ camera.name }}</p>
+                            <p class="text-[10px] text-slate-400">{{ camera.hardware_name }}</p>
+                        </td>
+                        <td class="px-4 py-4 text-sm font-mono text-slate-600">{{ camera.ip_address }}</td>
+                        <td class="px-4 py-4 text-sm text-slate-600">{{ camera.hardware_model }}</td>
+                        <td class="px-4 py-4 text-sm text-slate-600">{{ camera.firmware }}</td>
+                        <td class="px-4 py-4">
+                            {% if camera.is_recording %}
+                            <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">AKTIV</span>
+                            {% else %}
+                            <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold">AV</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-8 py-4 text-right">
+                            <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary-fixed rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                                <span class="material-symbols-outlined">info</span>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="px-8 py-4 border-t border-slate-100 flex justify-between items-center bg-surface-container-lowest">
+            <p class="text-xs text-slate-400 font-medium">Visar {{ cameras|length }} kameror</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

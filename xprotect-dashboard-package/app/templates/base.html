@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html class="light" lang="sv">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}XProtect Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-variant": "#e0e3e5",
+                        "tertiary-container": "#853f00",
+                        "surface-container-highest": "#e0e3e5",
+                        "tertiary-fixed": "#ffdbc7",
+                        "primary-fixed": "#d3e4ff",
+                        "tertiary": "#622d00",
+                        "inverse-on-surface": "#eef1f3",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#004881",
+                        "on-secondary-fixed-variant": "#374763",
+                        "surface-dim": "#d7dadc",
+                        "primary-fixed-dim": "#a2c9ff",
+                        "on-secondary-container": "#51617e",
+                        "on-background": "#181c1e",
+                        "secondary-fixed-dim": "#b7c7e8",
+                        "on-primary-fixed": "#001c38",
+                        "on-tertiary-fixed-variant": "#733600",
+                        "surface-tint": "#1c60a2",
+                        "primary-container": "#005495",
+                        "on-surface": "#181c1e",
+                        "on-primary-container": "#a2c9ff",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-low": "#f1f4f6",
+                        "surface": "#f7fafc",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "secondary": "#4f5f7b",
+                        "inverse-primary": "#a2c9ff",
+                        "primary": "#003d6e",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#d6e3ff",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f7fafc",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#e5e9eb",
+                        "background": "#f7fafc",
+                        "surface-container": "#ebeef0",
+                        "on-surface-variant": "#414750",
+                        "on-tertiary-container": "#ffb688",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#cdddff",
+                        "outline-variant": "#c1c7d2",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#091c35",
+                        "on-tertiary-fixed": "#311300",
+                        "outline": "#727781",
+                        "on-tertiary": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-background text-on-background font-body antialiased">
+    <aside class="fixed left-0 top-0 h-full z-50 pt-6 pb-8 h-screen w-72 flex flex-col bg-slate-50 dark:bg-slate-950 border-r-0">
+        <div class="px-8 mb-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-on-primary">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+                </div>
+                <div>
+                    <h1 class="font-headline font-extrabold text-blue-900 dark:text-sky-400 leading-tight">XProtect Manager</h1>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-slate-400">MilestonePSTools</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 space-y-1">
+            <a href="{{ url_for('index') }}" class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-900 dark:hover:text-sky-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-300 font-body text-sm font-medium {% if request.endpoint == 'index' %}bg-slate-200/50 dark:bg-slate-800/50 text-blue-900 dark:text-sky-400 before:absolute before:left-0 before:w-1 before:h-8 before:bg-blue-900 dark:before:bg-sky-400 before:rounded-r-full relative{% endif %}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Översikt</span>
+            </a>
+            <a href="{{ url_for('cameras') }}" class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-900 dark:hover:text-sky-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-300 font-body text-sm font-medium {% if request.endpoint == 'cameras' %}bg-slate-200/50 dark:bg-slate-800/50 text-blue-900 dark:text-sky-400{% endif %}">
+                <span class="material-symbols-outlined">videocam</span>
+                <span>Kameror</span>
+            </a>
+            <a href="{{ url_for('audit') }}" class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-900 dark:hover:text-sky-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-300 font-body text-sm font-medium {% if request.endpoint == 'audit' %}bg-slate-200/50 dark:bg-slate-800/50 text-blue-900 dark:text-sky-400{% endif %}">
+                <span class="material-symbols-outlined">verified_user</span>
+                <span>Best Practice</span>
+            </a>
+            <a href="{{ url_for('users') }}" class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-900 dark:hover:text-sky-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-300 font-body text-sm font-medium {% if request.endpoint == 'users' %}bg-slate-200/50 dark:bg-slate-800/50 text-blue-900 dark:text-sky-400{% endif %}">
+                <span class="material-symbols-outlined">group</span>
+                <span>Användare & Roller</span>
+            </a>
+            <a href="{{ url_for('rules') }}" class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-900 dark:hover:text-sky-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-300 font-body text-sm font-medium {% if request.endpoint == 'rules' %}bg-slate-200/50 dark:bg-slate-800/50 text-blue-900 dark:text-sky-400{% endif %}">
+                <span class="material-symbols-outlined">precision_manufacturing</span>
+                <span>Regler</span>
+            </a>
+            <a href="{{ url_for('reports') }}" class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-900 dark:hover:text-sky-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-300 font-body text-sm font-medium {% if request.endpoint == 'reports' %}bg-slate-200/50 dark:bg-slate-800/50 text-blue-900 dark:text-sky-400{% endif %}">
+                <span class="material-symbols-outlined">analytics</span>
+                <span>Rapporter</span>
+            </a>
+        </nav>
+        <div class="px-6 mt-auto">
+            <a href="{{ url_for('import_cameras') }}" class="w-full py-3 px-4 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 active:scale-95 transition-all">
+                <span class="material-symbols-outlined">add</span>
+                <span>Ny Import</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="ml-72 min-h-screen relative">
+        <header class="sticky top-0 z-40 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm shadow-blue-900/5 px-8 h-16 flex justify-between items-center w-full">
+            <div class="flex items-center gap-8">
+                <h2 class="font-headline font-extrabold text-2xl text-primary tracking-tight">{% block page_title %}Dashboard{% endblock %}</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-full transition-colors">
+                    <span class="material-symbols-outlined">notifications</span>
+                </button>
+                <button class="p-2 text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-full transition-colors">
+                    <span class="material-symbols-outlined">settings</span>
+                </button>
+                <div class="h-8 w-px bg-slate-200 mx-2"></div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-xs font-bold text-on-background">Admin</p>
+                        <p class="text-[10px] text-slate-500">Systemadministratör</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+                        <span class="material-symbols-outlined text-lg">person</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-8">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="mb-6 p-4 rounded-xl {% if category == 'error' %}bg-error-container text-on-error-container{% else %}bg-green-100 text-green-700{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+
+        <footer class="p-8 mt-auto border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-bold text-slate-400">
+            <p>© 2024 XProtect Dashboard | MilestonePSTools</p>
+            <div class="flex items-center gap-6">
+                <a class="hover:text-primary" href="#">System Logs</a>
+                <a class="hover:text-primary" href="#">API Documentation</a>
+                <a class="hover:text-primary" href="#">Support</a>
+            </div>
+        </footer>
+    </main>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

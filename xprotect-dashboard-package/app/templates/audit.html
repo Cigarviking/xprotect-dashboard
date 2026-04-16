@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Best Practice Audit{% endblock %}
+{% block page_title %}Best Practice Audit{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm col-span-1">
+            <p class="text-sm text-on-surface-variant">Totalt</p>
+            <p class="text-3xl font-black font-headline text-primary mt-1">{{ stats.total }}</p>
+        </div>
+        <div class="bg-error-container p-6 rounded-2xl shadow-sm col-span-1">
+            <p class="text-sm text-on-error-container">Kritiska</p>
+            <p class="text-3xl font-black font-headline text-on-error-container mt-1">{{ stats.critical }}</p>
+        </div>
+        <div class="bg-tertiary-container p-6 rounded-2xl shadow-sm col-span-1">
+            <p class="text-sm text-on-tertiary-container">Varningar</p>
+            <p class="text-3xl font-black font-headline text-on-tertiary-container mt-1">{{ stats.warning }}</p>
+        </div>
+        <div class="bg-surface-container-low p-6 rounded-2xl shadow-sm col-span-1">
+            <p class="text-sm text-on-surface-variant">Info</p>
+            <p class="text-3xl font-black font-headline text-primary mt-1">{{ stats.info }}</p>
+        </div>
+        <div class="bg-secondary-container p-6 rounded-2xl shadow-sm col-span-1">
+            <p class="text-sm text-on-secondary-container">Ackviserade</p>
+            <p class="text-3xl font-black font-headline text-on-secondary-container mt-1">{{ stats.acknowledged }}</p>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center">
+        <div></div>
+        <div class="flex gap-3">
+            <a href="{{ url_for('audit_report', format='html') }}" class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest text-on-surface font-semibold rounded-full hover:bg-surface-variant transition-colors">
+                <span class="material-symbols-outlined text-lg">description</span>
+                <span>HTML Rapport</span>
+            </a>
+            <a href="{{ url_for('audit_report', format='pdf') }}" class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-semibold rounded-full hover:bg-primary-container transition-all">
+                <span class="material-symbols-outlined text-lg">picture_as_pdf</span>
+                <span>PDF Rapport</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="space-y-4">
+        {% for result in audit_results %}
+        <div class="bg-surface-container-lowest rounded-2xl p-6 {% if result.acknowledged %}opacity-60 border-l-4 border-secondary{% endif %}">
+            <div class="flex items-start justify-between">
+                <div class="flex items-start gap-6">
+                    <div class="w-14 h-14 rounded-full flex items-center justify-center {% if result.severity == 'Critical' %}bg-error-container text-on-error-container{% elif result.severity == 'Warning' %}bg-tertiary-container text-on-tertiary-container{% else %}bg-surface-container-high text-on-surface-variant{% endif %}">
+                        <span class="material-symbols-outlined text-2xl">{% if result.severity == 'Critical' %}emergency{% elif result.severity == 'Warning' %}warning{% else %}info{% endif %}</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h4 class="font-bold text-lg text-on-surface">{{ result.rule_name }}</h4>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase {% if result.severity == 'Critical' %}bg-error-container text-on-error-container{% elif result.severity == 'Warning' %}bg-tertiary-container text-on-tertiary-container{% else %}bg-secondary-container text-on-secondary-container{% endif %}">{{ result.severity }}</span>
+                            {% if result.acknowledged %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-secondary-container text-on-secondary-container">ACKVISERAD</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm text-on-surface-variant">{{ result.description }}</p>
+                        <p class="text-sm font-medium text-primary mt-2">📋 {{ result.recommendation }}</p>
+                        <p class="text-xs text-on-surface-variant mt-2">Enhet: {{ result.device_name }}</p>
+                        {% if result.acknowledged and result.ack_comment %}
+                        <p class="text-xs text-secondary font-medium mt-2 italic">Kommentar: {{ result.ack_comment }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    {% if not result.acknowledged %}
+                    <button onclick="acknowledge('{{ result.rule_id }}', '{{ result.device_id }}', '{{ result.rule_name }}')" class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-xl text-sm font-bold hover:bg-secondary-fixed transition-colors">
+                        Ackvisera
+                    </button>
+                    {% else %}
+                    <button onclick="removeAck('{{ result.rule_id }}', '{{ result.device_id }}')" class="px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-xl text-sm font-bold hover:bg-surface-variant transition-colors">
+                        Ta bort ackvisering
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="ackModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center">
+    <div class="bg-surface-container-lowest rounded-2xl p-8 max-w-md w-full mx-4">
+        <h3 class="font-headline font-bold text-xl text-on-background mb-4">Ackvisera problem</h3>
+        <p id="ackDescription" class="text-sm text-on-surface-variant mb-4"></p>
+        <input type="text" id="ackComment" placeholder="Ange anledning (valfritt)" class="w-full px-4 py-3 bg-surface-container-high border-none rounded-xl text-sm focus:ring-2 focus:ring-primary mb-4">
+        <div class="flex gap-3">
+            <button onclick="closeAckModal()" class="flex-1 py-3 bg-surface-container-high text-on-surface font-semibold rounded-xl hover:bg-surface-variant transition-colors">
+                Avbryt
+            </button>
+            <button onclick="confirmAck()" class="flex-1 py-3 bg-primary text-on-primary font-semibold rounded-xl hover:bg-primary-container transition-colors">
+                Bekräfta
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentRuleId = '';
+let currentDeviceId = '';
+
+function acknowledge(ruleId, deviceId, ruleName) {
+    currentRuleId = ruleId;
+    currentDeviceId = deviceId;
+    document.getElementById('ackDescription').textContent = `Du håller på att ackvisera: ${ruleName}`;
+    document.getElementById('ackModal').classList.remove('hidden');
+    document.getElementById('ackModal').classList.add('flex');
+}
+
+function closeAckModal() {
+    document.getElementById('ackModal').classList.add('hidden');
+    document.getElementById('ackModal').classList.remove('flex');
+}
+
+function confirmAck() {
+    const comment = document.getElementById('ackComment').value;
+    fetch('/audit/acknowledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            rule_id: currentRuleId,
+            device_id: currentDeviceId,
+            comment: comment,
+            acknowledged_by: 'Admin'
+        })
+    }).then(() => location.reload());
+}
+
+function removeAck(ruleId, deviceId) {
+    fetch('/audit/remove_ack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            rule_id: ruleId,
+            device_id: deviceId
+        })
+    }).then(() => location.reload());
+}
+</script>
+{% endblock %}

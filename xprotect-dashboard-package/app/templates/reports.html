@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Rapporter - XProtect Dashboard{% endblock %}
+{% block page_title %}Rapporter{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-surface-container-lowest rounded-2xl p-8">
+            <h3 class="font-headline font-bold text-xl text-on-background mb-6">Generera rapport</h3>
+            <div class="space-y-4">
+                <button onclick="runReport('all')" class="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-xl font-bold flex items-center justify-between px-6 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all">
+                    <span>Fullständig rapport</span>
+                    <span class="material-symbols-outlined">description</span>
+                </button>
+                <button onclick="runReport('cameras')" class="w-full py-3 px-6 bg-surface-container-high text-on-surface font-semibold rounded-xl flex items-center justify-between hover:bg-surface-variant transition-colors">
+                    <span>Kamera-rapport</span>
+                    <span class="material-symbols-outlined">videocam</span>
+                </button>
+                <button onclick="runReport('audit')" class="w-full py-3 px-6 bg-surface-container-high text-on-surface font-semibold rounded-xl flex items-center justify-between hover:bg-surface-variant transition-colors">
+                    <span>Best Practice Audit</span>
+                    <span class="material-symbols-outlined">verified_user</span>
+                </button>
+                <button onclick="runReport('users')" class="w-full py-3 px-6 bg-surface-container-high text-on-surface font-semibold rounded-xl flex items-center justify-between hover:bg-surface-variant transition-colors">
+                    <span>Användare och Roller</span>
+                    <span class="material-symbols-outlined">group</span>
+                </button>
+            </div>
+            <div id="runStatus" class="mt-4 text-sm text-on-surface-variant hidden"></div>
+        </div>
+
+        <div class="bg-surface-container-lowest rounded-2xl p-8">
+            <h3 class="font-headline font-bold text-xl text-on-background mb-6">Schemalägg rapport</h3>
+            <p class="text-sm text-on-surface-variant mb-6">För att schemalägga rapporter, använd Windows Task Scheduler med följande kommando:</p>
+            <div class="bg-surface-container-high p-4 rounded-xl mb-4">
+                <code class="text-xs font-mono text-on-surface">python scripts\schedule_report.py [daily|weekly|monthly]</code>
+            </div>
+            <div class="bg-surface-container-low p-4 rounded-xl">
+                <h4 class="font-bold text-sm mb-3">Exempel: Daglig rapport</h4>
+                <div class="bg-surface-container-high p-4 rounded-xl">
+                    <code class="text-xs font-mono text-on-surface">schtasks /create /tn "XProtectDailyReport" /tr "python C:\xprotect-dashboard\scripts\schedule_report.py daily" /sc daily /st 04:00</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-2xl overflow-hidden">
+        <div class="px-8 py-5 bg-surface-container-low">
+            <h3 class="font-headline font-bold text-lg text-primary">Genererade rapporter</h3>
+        </div>
+        <div class="divide-y divide-slate-50">
+            {% for report in existing_reports %}
+            <div class="px-8 py-4 hover:bg-slate-50/50 transition-colors flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center">
+                        <span class="material-symbols-outlined">description</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-on-surface">{{ report.filename }}</p>
+                        <p class="text-xs text-on-surface-variant">{{ report.created.strftime('%Y-%m-%d %H:%M:%S') }} • {{ (report.size / 1024)|round(1) }} KB</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('reports') }}/{{ report.filename }}" download class="px-4 py-2 bg-surface-container-high text-on-surface font-semibold rounded-xl hover:bg-surface-variant transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">download</span>
+                    <span>Ladda ner</span>
+                </a>
+            </div>
+            {% endfor %}
+            {% if not existing_reports %}
+            <div class="px-8 py-12 text-center">
+                <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4">folder_open</span>
+                <p class="text-on-surface-variant">Inga rapporter ännu. Generera en rapport ovan.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div id="loadingModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center">
+    <div class="bg-surface-container-lowest rounded-2xl p-8 text-center">
+        <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="font-bold text-on-background">Genererar rapport...</p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function runReport(type) {
+    const modal = document.getElementById('loadingModal');
+    const status = document.getElementById('runStatus');
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    status.classList.add('hidden');
+    
+    fetch('/reports/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report_type: type })
+    })
+    .then(response => response.json())
+    .then(data => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        
+        if (data.success) {
+            status.textContent = `Rapporter genererade! Timestamp: ${data.timestamp}`;
+            status.classList.remove('hidden');
+            status.classList.add('text-green-600');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            status.textContent = 'Fel: ' + data.error;
+            status.classList.remove('hidden');
+            status.classList.add('text-error');
+        }
+    })
+    .catch(error => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        status.textContent = 'Fel: ' + error;
+        status.classList.remove('hidden');
+        status.classList.add('text-error');
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Användare och Roller{% endblock %}
+{% block page_title %}Användare & Roller{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-end">
+        <div>
+            <p class="text-on-surface-variant">Granska användaråtkomst och behörigheter</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{{ url_for('users_report', format='html') }}" class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest text-on-surface font-semibold rounded-full hover:bg-surface-variant transition-colors">
+                <span class="material-symbols-outlined text-lg">description</span>
+                <span>HTML Rapport</span>
+            </a>
+            <a href="{{ url_for('users_report', format='pdf') }}" class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-semibold rounded-full hover:bg-primary-container transition-all">
+                <span class="material-symbols-outlined text-lg">picture_as_pdf</span>
+                <span>PDF Rapport</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-2xl overflow-hidden">
+        <div class="px-8 py-5 flex items-center justify-between bg-surface-container-low">
+            <h3 class="font-headline font-bold text-lg text-primary">Användaröversikt</h3>
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                <input type="text" id="searchInput" class="pl-10 pr-4 py-2 bg-white border-none rounded-xl text-sm w-64 focus:ring-2 focus:ring-primary" placeholder="Sök användare...">
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-surface-container-low text-on-surface-variant uppercase text-[10px] font-black tracking-widest">
+                        <th class="px-6 py-4">Användare</th>
+                        <th class="px-4 py-4">E-post</th>
+                        <th class="px-4 py-4">Domain</th>
+                        <th class="px-4 py-4">Roller</th>
+                        <th class="px-4 py-4">Åtkomst</th>
+                        <th class="px-4 py-4">Status</th>
+                        <th class="px-4 py-4">Senast inloggad</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for user in users %}
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold">
+                                    {{ user.name[0]|upper }}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-on-surface">{{ user.name }}</p>
+                                    <p class="text-xs text-on-surface-variant">{{ user.display_name }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 text-sm text-on-surface-variant">{{ user.email }}</td>
+                        <td class="px-4 py-4 text-sm">{{ user.domain }}</td>
+                        <td class="px-4 py-4">
+                            <div class="flex flex-wrap gap-1">
+                                {% for role in user.roles %}
+                                <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold">{{ role }}</span>
+                                {% endfor %}
+                                {% if not user.roles %}
+                                <span class="text-xs text-on-surface-variant">Inga roller</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-4 py-4">
+                            <div class="flex gap-1">
+                                {% if user.permissions.can_view_live %}
+                                <span class="material-symbols-outlined text-sm text-green-600" title="Kan se live">visibility</span>
+                                {% endif %}
+                                {% if user.permissions.can_view_recorded %}
+                                <span class="material-symbols-outlined text-sm text-blue-600" title="Kan se inspelat">play_circle</span>
+                                {% endif %}
+                                {% if user.permissions.can_export %}
+                                <span class="material-symbols-outlined text-sm text-amber-600" title="Kan exportera">download</span>
+                                {% endif %}
+                                {% if user.permissions.can_configure %}
+                                <span class="material-symbols-outlined text-sm text-error" title="Kan konfigurera">settings</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-4 py-4">
+                            {% if user.is_enabled %}
+                            <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">AKTIV</span>
+                            {% else %}
+                            <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold">INAKTIV</span>
+                            {% endif %}
+                            {% if user.is_builtin %}
+                            <span class="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed-variant rounded-full text-[10px] font-bold ml-1">BUILT-IN</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-4 text-sm text-on-surface-variant">{{ user.last_login }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="px-8 py-4 border-t border-slate-100 flex justify-between items-center bg-surface-container-lowest">
+            <p class="text-xs text-slate-400 font-medium">Visar {{ users|length }} användare</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

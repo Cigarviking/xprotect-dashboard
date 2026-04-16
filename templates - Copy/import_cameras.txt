@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Importera kameror{% endblock %}
+{% block page_title %}Importera kameror{% endblock %}
+
+{% block content %}
+<div style="max-width:600px;margin:0 auto;">
+    <div class="card" style="text-align:center;">
+        <div style="width:64px;height:64px;background:var(--primary-container);color:var(--on-primary-container);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+            <span class="material-symbols-outlined" style="font-size:32px;">upload_file</span>
+        </div>
+        <h3 style="font-size:24px;font-weight:700;margin-bottom:8px;">Importera fran Excel/CSV</h3>
+        <p style="color:var(--on-surface-variant);margin-bottom:32px;">Ladda upp en Excel-fil (.xlsx) eller CSV-fil med kamerainformation</p>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div style="border:2px dashed var(--outline-variant);border-radius:16px;padding:48px;margin-bottom:24px;">
+                <input type="file" name="file" id="fileInput" accept=".xlsx,.xls,.csv" required style="display:none;">
+                <label for="fileInput" style="cursor:pointer;">
+                    <span class="material-symbols-outlined" style="font-size:48px;color:var(--on-surface-variant);display:block;margin-bottom:16px;">cloud_upload</span>
+                    <p style="font-weight:500;">Klicka for att valja fil</p>
+                    <p style="font-size:12px;color:#9ca3af;margin-top:8px;">eller dra och slapp filen har</p>
+                </label>
+                <p id="fileName" style="margin-top:16px;font-weight:600;color:var(--primary);display:none;"></p>
+            </div>
+
+            <div style="background:var(--surface-container-low);padding:20px;border-radius:12px;text-align:left;margin-bottom:24px;">
+                <h4 style="font-weight:700;margin-bottom:12px;">Filformat</h4>
+                <p style="font-size:12px;color:var(--on-surface-variant);margin-bottom:12px;">Excel-filen bor innehalla foljande kolumner i worksheet "DeviceGroups":</p>
+                <ul style="font-size:12px;color:var(--on-surface-variant);list-style:none;padding:0;">
+                    <li style="margin-bottom:4px;"><strong>ParentGroup</strong> - Namn pa overordnad grupp</li>
+                    <li style="margin-bottom:4px;"><strong>CameraGroup</strong> - Namn pa kamera-grupp</li>
+                    <li style="margin-bottom:4px;"><strong>Device</strong> - Kamerans namn i VMS</li>
+                    <li><strong>Description</strong> - Beskrivning (valfritt)</li>
+                </ul>
+            </div>
+
+            <button type="submit" class="btn btn-primary-sm" style="width:100%;padding:16px;">
+                <span class="material-symbols-outlined">upload</span>
+                Importera kameror
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileName').style.display = 'block';
+    }
+});
+</script>
+{% endblock %}

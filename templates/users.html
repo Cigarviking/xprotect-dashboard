@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Anvandare och Roller{% endblock %}
+{% block page_title %}Anvandare &amp; Roller{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+    <div>
+        <p style="color:var(--on-surface-variant);">Granska anvandaratkomst och behörigheter</p>
+    </div>
+    <div style="display:flex;gap:12px;">
+        <a href="{{ url_for('users_report', format='html') }}" class="btn btn-secondary">
+            <span class="material-symbols-outlined" style="font-size:18px;">description</span>
+            HTML Rapport
+        </a>
+        <a href="{{ url_for('users_report', format='pdf') }}" class="btn btn-primary-sm">
+            <span class="material-symbols-outlined" style="font-size:18px;">picture_as_pdf</span>
+            PDF Rapport
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div style="padding:20px 24px;background:var(--surface-container-low);display:flex;justify-content:space-between;align-items:center;border-radius:16px 16px 0 0;">
+        <h3 class="card-title">Anvandarooversikt</h3>
+        <input type="text" id="searchInput" class="form-input" placeholder="Sok anvandare..." style="width:250px;">
+    </div>
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Anvandare</th>
+                    <th>E-post</th>
+                    <th>Domain</th>
+                    <th>Roller</th>
+                    <th>Atkomst</th>
+                    <th>Status</th>
+                    <th>Senast inloggad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:40px;height:40px;border-radius:50%;background:var(--primary-container);color:var(--on-primary-container);display:flex;align-items:center;justify-content:center;font-weight:700;">
+                                {{ user.name[0]|upper if user.name else '?' }}
+                            </div>
+                            <div>
+                                <div style="font-weight:600;">{{ user.name }}</div>
+                                <div style="font-size:11px;color:#9ca3af;">{{ user.display_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.domain }}</td>
+                    <td>
+                        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                            {% for role in user.roles[:3] %}
+                            <span class="badge badge-info" style="font-size:10px;">{{ role }}</span>
+                            {% endfor %}
+                            {% if user.roles|length > 3 %}
+                            <span class="badge badge-info" style="font-size:10px;">+{{ user.roles|length - 3 }}</span>
+                            {% endif %}
+                            {% if not user.roles %}
+                            <span style="font-size:12px;color:#9ca3af;">Inga roller</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:4px;">
+                            {% if user.permissions.can_view_live %}
+                            <span class="material-symbols-outlined" style="font-size:16px;color:#22c55e;" title="Kan se live">visibility</span>
+                            {% endif %}
+                            {% if user.permissions.can_view_recorded %}
+                            <span class="material-symbols-outlined" style="font-size:16px;color:#3b82f6;" title="Kan se inspelat">play_circle</span>
+                            {% endif %}
+                            {% if user.permissions.can_export %}
+                            <span class="material-symbols-outlined" style="font-size:16px;color:#f59e0b;" title="Kan exportera">download</span>
+                            {% endif %}
+                            {% if user.permissions.can_configure %}
+                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--error);" title="Kan konfigurera">settings</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if user.is_enabled %}
+                        <span class="badge badge-success">Aktiv</span>
+                        {% else %}
+                        <span class="badge badge-warning">Inaktiv</span>
+                        {% endif %}
+                        {% if user.is_builtin %}
+                        <span class="badge badge-info" style="margin-left:4px;">BUILT-IN</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.last_login }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="padding:16px 24px;border-top:1px solid #f3f4f6;">
+        <p style="font-size:12px;color:#9ca3af;">Visar {{ users|length }} anvandare</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}
